@@ -1,0 +1,15 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_meta_business_account,meta.business.account,model_meta_business_account,base.group_user,1,1,1,1
+access_meta_page,meta.page,model_meta_page,base.group_user,1,1,1,1
+access_meta_ig_account,meta.ig.account,model_meta_ig_account,base.group_user,1,1,1,1
+access_meta_ad_account,meta.ad_account,model_meta_ad_account,base.group_user,1,1,1,1
+access_meta_lead_form,meta.lead.form,model_meta_lead_form,base.group_user,1,1,1,1
+access_meta_lead_form_field_map,meta.lead.form.field.map,model_meta_lead_form_field_map,base.group_user,1,1,1,1
+access_meta_post,meta.post,model_meta_post,base.group_user,1,1,1,1
+access_meta_campaign,meta.campaign,model_meta_campaign,base.group_user,1,1,1,1
+access_meta_adset,meta.adset,model_meta_adset,base.group_user,1,1,1,1
+access_meta_ad,meta.ad,model_meta_ad,base.group_user,1,1,1,1
+access_meta_promotion,meta.promotion,model_meta_promotion,base.group_user,1,1,1,1
+access_meta_lead_log,meta.lead.log,model_meta_lead_log,base.group_user,1,1,1,1
+access_boost_post_wizard,boost.post.wizard,model_boost_post_wizard,base.group_user,1,1,1,1
+access_preview_wizard,preview.wizard,model_preview_wizard,base.group_user,1,1,1,1

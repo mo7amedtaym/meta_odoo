@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_meta_ads_root"
+              name="Meta Ads"
+              parent="crm.crm_menu_config"
+              sequence="50"/>
+
+    <menuitem id="menu_meta_ads_pages"
+              name="Pages"
+              parent="menu_meta_ads_root"
+              action="action_meta_page"
+              sequence="10"/>
+
+    <menuitem id="menu_meta_ads_lead_forms"
+              name="Lead Forms"
+              parent="menu_meta_ads_root"
+              action="action_meta_lead_form"
+              sequence="20"/>
+
+    <menuitem id="menu_meta_ads_lead_logs"
+              name="Lead Logs"
+              parent="menu_meta_ads_root"
+              action="action_meta_lead_log"
+              sequence="30"/>
+
+    <menuitem id="menu_meta_ads_settings"
+              name="Settings"
+              parent="menu_meta_ads_root"
+              action="meta_config_settings_action"
+              sequence="50"/>
+</odoo>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record model="ir.module.category" id="module_category_meta_ads">
+        <field name="name">Meta Ads</field>
+        <field name="sequence">100</field>
+    </record>
+
+    <record id="privilege_meta_ads" model="res.groups.privilege">
+        <field name="name">Meta Ads Access</field>
+        <field name="category_id" ref="module_category_meta_ads"/>
+    </record>
+
+    <record id="group_meta_ads_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="privilege_id" ref="privilege_meta_ads"/>
+    </record>
+    
+    <record id="group_meta_ads_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="privilege_id" ref="privilege_meta_ads"/>
+        <field name="implied_ids" eval="[(4, ref('group_meta_ads_user'))]"/>
+    </record>
+</odoo>

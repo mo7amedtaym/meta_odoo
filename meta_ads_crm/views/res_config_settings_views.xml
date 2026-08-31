@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="meta_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.meta.ads</field>
+        <field name="model">res.config.settings</field>
+        <field name="arch" type="xml">
+            <form string="Meta Ads Settings" class="oe_form_configuration" js_class="base_settings">
+                <app data-string="Meta Ads" string="Meta Ads" name="meta_ads_crm_connector"
+                     groups="base.group_system">
+                    <block title="Connection">
+                        <setting>
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <label for="meta_app_id" class="o_light_label"/>
+                                    <field name="meta_app_id" placeholder="e.g. 123456789"/>
+                                </div>
+                                <div class="col-lg-6">
+                                    <label for="meta_app_secret" class="o_light_label"/>
+                                    <field name="meta_app_secret" password="True" placeholder="App Secret"/>
+                                </div>
+                            </div>
+                            <div class="row mt8">
+                                <div class="col-lg-6">
+                                    <label for="meta_webhook_verify_token" class="o_light_label"/>
+                                    <field name="meta_webhook_verify_token" placeholder="Your verify token"/>
+                                </div>
+                                <div class="col-lg-6">
+                                    <label for="meta_graph_version" class="o_light_label"/>
+                                    <field name="meta_graph_version" placeholder="v21.0"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                    <block title="OAuth &amp; Token">
+                        <setting>
+                            <div class="mt4 mb8">
+                                <button name="action_connect_meta" type="object"
+                                        class="btn btn-primary" string="Connect with Meta"
+                                        invisible="meta_connected"/>
+                                <button name="action_disconnect_meta" type="object"
+                                        class="btn btn-danger" string="Disconnect"
+                                        invisible="not meta_connected"/>
+                            </div>
+                            <div class="mt8">
+                                <button name="action_generate_fernet_key" type="object"
+                                        class="btn btn-secondary" string="Generate Encryption Key"/>
+                            </div>
+                        </setting>
+                    </block>
+                    <block title="Webhook">
+                        <setting>
+                            <div class="text-muted mb8">Copy this URL into your Meta Developer Dashboard → Webhooks → Callback URL</div>
+                            <field name="meta_webhook_url" readonly="1"/>
+                        </setting>
+                    </block>
+                </app>
+            </form>
+        </field>
+    </record>
+
+    <record id="meta_config_settings_action" model="ir.actions.act_window">
+        <field name="name">Meta Ads Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_id" ref="meta_config_settings_view_form"/>
+        <field name="view_mode">form</field>
+        <field name="context">{'module': 'meta_ads_crm_connector', 'bin_size': False}</field>
+    </record>
+</odoo>

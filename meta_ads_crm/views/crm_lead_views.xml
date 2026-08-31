@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Extend CRM Lead Form: add Meta Ads info -->
+    <record id="crm_lead_view_form_meta" model="ir.ui.view">
+        <field name="name">crm.lead.form.meta.ads</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Meta Ads" name="meta_ads"
+                      invisible="not is_meta_lead">
+                    <group>
+                        <group string="Meta Source">
+                            <field name="is_meta_lead"/>
+                            <field name="meta_form_id"/>
+                            <field name="meta_platform"/>
+                        </group>
+                        <group string="Meta Campaign">
+                            <field name="meta_campaign_id"/>
+                            <field name="meta_ad_id"/>
+                            <field name="meta_leadgen_id"/>
+                        </group>
+                    </group>
+                    <group string="Raw Data" invisible="not meta_raw_data">
+                        <field name="meta_raw_data" nolabel="1" readonly="1"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Extend CRM Lead Search: add Meta filter -->
+    <record id="crm_lead_view_search_meta" model="ir.ui.view">
+        <field name="name">crm.lead.search.meta.ads</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.view_crm_case_leads_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[1]" position="before">
+                <filter name="filter_meta_leads" string="Meta Leads"
+                        domain="[('is_meta_lead','=',True)]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

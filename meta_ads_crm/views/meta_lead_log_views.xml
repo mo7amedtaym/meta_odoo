@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Lead Log List -->
+    <record id="meta_lead_log_view_tree" model="ir.ui.view">
+        <field name="name">meta.lead.log.list</field>
+        <field name="model">meta.lead.log</field>
+        <field name="arch" type="xml">
+            <list decoration-info="status == 'Pending'"
+                  decoration-danger="status == 'Error'"
+                  decoration-success="status == 'Created'"
+                  decoration-warning="status == 'Duplicate'">
+                <field name="leadgen_id"/>
+                <field name="form_id"/>
+                <field name="page_id"/>
+                <field name="platform"/>
+                <field name="ad_id"/>
+                <field name="status"/>
+                <field name="crm_lead_id"/>
+                <field name="retry_count"/>
+                <field name="created_date"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Lead Log Form -->
+    <record id="meta_lead_log_view_form" model="ir.ui.view">
+        <field name="name">meta.lead.log.form</field>
+        <field name="model">meta.lead.log</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_process" type="object"
+                            string="Retry Processing"
+                            invisible="status in ('Created', 'Duplicate')"
+                            class="btn btn-primary"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="leadgen_id" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group string="Meta Info">
+                            <field name="form_id"/>
+                            <field name="page_id"/>
+                            <field name="platform"/>
+                            <field name="ad_id"/>
+                            <field name="campaign_id"/>
+                        </group>
+                        <group string="Status">
+                            <field name="status"/>
+                            <field name="crm_lead_id"/>
+                            <field name="retry_count"/>
+                            <field name="created_date"/>
+                        </group>
+                    </group>
+                    <group string="Error" invisible="not error_message">
+                        <field name="error_message" nolabel="1" readonly="1"/>
+                    </group>
+                    <notebook>
+                        <page string="Payload" name="payload">
+                            <field name="payload_json" nolabel="1" readonly="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Lead Log Search -->
+    <record id="meta_lead_log_view_search" model="ir.ui.view">
+        <field name="name">meta.lead.log.search</field>
+        <field name="model">meta.lead.log</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="leadgen_id"/>
+                <field name="form_id"/>
+                <field name="page_id"/>
+                <separator/>
+                <filter name="pending" string="Pending" domain="[('status','=','Pending')]"/>
+                <filter name="created" string="Created" domain="[('status','=','Created')]"/>
+                <filter name="errors" string="Errors" domain="[('status','=','Error')]"/>
+                <separator/>
+                <filter name="group_by_status" string="Status" context="{'group_by':'status'}"/>
+                <filter name="group_by_page" string="Page" context="{'group_by':'page_id'}"/>
+                <filter name="group_by_form" string="Form" context="{'group_by':'form_id'}"/>
+                <filter name="group_by_date" string="Date" context="{'group_by':'created_date'}"/>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_meta_lead_log" model="ir.actions.act_window">
+        <field name="name">Lead Logs</field>
+        <field name="res_model">meta.lead.log</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="meta_lead_log_view_search"/>
+    </record>
+</odoo>
