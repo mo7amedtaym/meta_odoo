@@ -44,6 +44,79 @@ class MetaPage(models.Model):
             _logger.warning('Failed to decrypt page token for %s: %s', self.page_id, e)
             return False
 
+
+    def action_subscribe_webhook(self):
+        """Subscribe this Facebook Page to the app's leadgen webhook field."""
+        self.ensure_one()
+        access_token = self.decrypt_token()
+        if not access_token:
+            raise UserError('No valid access token for this page. Re-authorize via Settings.')
+
+        graph_version = self.env['ir.config_parameter'].sudo().get_param(
+            'meta.graph_version', 'v26.0'
+        )
+        url = 'https://graph.facebook.com/%s/%s/subscribed_apps' % (graph_version, self.page_id)
+        try:
+            resp = requests.post(url, data={
+                'access_token': access_token,
+                'subscribed_fields': 'leadgen',
+            }, timeout=30)
+            resp.raise_for_status()
+            data = resp.json()
+        except requests.RequestException as e:
+            detail = getattr(e.response, 'text', '') if getattr(e, 'response', None) is not None else ''
+            raise UserError('Meta webhook subscription failed: %s %s' % (str(e), detail))
+
+        if not data.get('success'):
+            raise UserError('Meta did not confirm the webhook subscription: %s' % data)
+
+        self.webhook_subscribed = True
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Webhook Subscribed',
+                'message': 'Page %s is subscribed to leadgen.' % self.name,
+                'type': 'success',
+                'sticky': False,
+            }
+        }
+
+    def action_check_webhook_subscription(self):
+        """Check whether this Page is subscribed to the app and leadgen field."""
+        self.ensure_one()
+        access_token = self.decrypt_token()
+        if not access_token:
+            raise UserError('No valid access token for this page. Re-authorize via Settings.')
+
+        graph_version = self.env['ir.config_parameter'].sudo().get_param(
+            'meta.graph_version', 'v26.0'
+        )
+        url = 'https://graph.facebook.com/%s/%s/subscribed_apps' % (graph_version, self.page_id)
+        try:
+            resp = requests.get(url, params={
+                'access_token': access_token,
+                'fields': 'id,name,subscribed_fields',
+            }, timeout=30)
+            resp.raise_for_status()
+            data = resp.json().get('data', [])
+        except requests.RequestException as e:
+            detail = getattr(e.response, 'text', '') if getattr(e, 'response', None) is not None else ''
+            raise UserError('Could not check Meta webhook subscription: %s %s' % (str(e), detail))
+
+        subscribed = any('leadgen' in (item.get('subscribed_fields') or []) for item in data)
+        self.webhook_subscribed = subscribed
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Webhook Subscription',
+                'message': 'Subscribed to leadgen.' if subscribed else 'Not subscribed to leadgen.',
+                'type': 'success' if subscribed else 'warning',
+                'sticky': False,
+            }
+        }
+
     def action_sync_forms(self):
         """Fetch lead forms from Meta Graph API and create/update local records."""
         self.ensure_one()
@@ -52,7 +125,7 @@ class MetaPage(models.Model):
             raise UserError('No valid access token for this page. Re-authorize via Settings.')
 
         graph_version = self.env['ir.config_parameter'].sudo().get_param(
-            'meta.graph_version', 'v21.0'
+            'meta.graph_version', 'v26.0'
         )
         url = 'https://graph.facebook.com/%s/%s/leadgen_forms' % (graph_version, self.page_id)
         params = {

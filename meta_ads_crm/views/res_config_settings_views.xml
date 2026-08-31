@@ -5,7 +5,7 @@
         <field name="model">res.config.settings</field>
         <field name="arch" type="xml">
             <form string="Meta Ads Settings" class="oe_form_configuration" js_class="base_settings">
-                <app data-string="Meta Ads" string="Meta Ads" name="meta_ads_crm_connector"
+                <app data-string="Meta Ads" string="Meta Ads" name="meta_ads_crm"
                      groups="base.group_system">
                     <block title="Connection">
                         <setting>
@@ -26,7 +26,14 @@
                                 </div>
                                 <div class="col-lg-6">
                                     <label for="meta_graph_version" class="o_light_label"/>
-                                    <field name="meta_graph_version" placeholder="v21.0"/>
+                                    <field name="meta_graph_version" placeholder="v26.0"/>
+                                </div>
+                            </div>
+                            <div class="row mt8">
+                                <div class="col-lg-12">
+                                    <label for="meta_public_base_url" class="o_light_label"/>
+                                    <field name="meta_public_base_url" placeholder="https://testmeta.o.cm.sa"/>
+                                    <div class="text-muted">Use the public HTTPS URL only, without a trailing slash.</div>
                                 </div>
                             </div>
                         </setting>
@@ -47,10 +54,13 @@
                             </div>
                         </setting>
                     </block>
-                    <block title="Webhook">
+                    <block title="Webhook &amp; OAuth URLs">
                         <setting>
-                            <div class="text-muted mb8">Copy this URL into your Meta Developer Dashboard → Webhooks → Callback URL</div>
+                            <div class="text-muted mb8">Use these exact URLs in Meta Developer Dashboard.</div>
+                            <label for="meta_webhook_url" class="o_light_label"/>
                             <field name="meta_webhook_url" readonly="1"/>
+                            <label for="meta_oauth_redirect_url" class="o_light_label mt8"/>
+                            <field name="meta_oauth_redirect_url" readonly="1"/>
                         </setting>
                     </block>
                 </app>
@@ -63,6 +73,6 @@
         <field name="res_model">res.config.settings</field>
         <field name="view_id" ref="meta_config_settings_view_form"/>
         <field name="view_mode">form</field>
-        <field name="context">{'module': 'meta_ads_crm_connector', 'bin_size': False}</field>
+        <field name="context">{'module': 'meta_ads_crm', 'bin_size': False}</field>
     </record>
 </odoo>

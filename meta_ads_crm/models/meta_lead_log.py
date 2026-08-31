@@ -82,7 +82,7 @@ class MetaLeadLog(models.Model):
     def _fetch_lead_data(self, access_token):
         """Call Meta Graph API to get full lead data."""
         graph_version = self.env['ir.config_parameter'].sudo().get_param(
-            'meta.graph_version', 'v21.0'
+            'meta.graph_version', 'v26.0'
         )
         url = 'https://graph.facebook.com/%s/%s' % (graph_version, self.leadgen_id)
         params = {'access_token': access_token}

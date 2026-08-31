@@ -22,6 +22,10 @@
         <field name="arch" type="xml">
             <form>
                 <header>
+                    <button name="action_subscribe_webhook" type="object"
+                            string="Subscribe Webhook" class="btn btn-primary"/>
+                    <button name="action_check_webhook_subscription" type="object"
+                            string="Check Subscription" class="btn btn-secondary"/>
                     <button name="action_sync_forms" type="object"
                             string="Sync Lead Forms" class="btn btn-primary"/>
                 </header>
