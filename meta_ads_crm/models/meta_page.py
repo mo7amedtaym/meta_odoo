@@ -1,3 +1,4 @@
+import json
 import logging
 import requests
 
@@ -20,6 +21,11 @@ class MetaPage(models.Model):
     webhook_subscribed = fields.Boolean(string='Webhook Subscribed', default=False)
     ig_connected = fields.Boolean(string='IG Connected', default=False)
     active = fields.Boolean(default=True)
+
+    token_scopes = fields.Text(string='Token Scopes', readonly=True, copy=False)
+    token_granular_scopes = fields.Text(string='Granular Scopes', readonly=True, copy=False)
+    last_api_test = fields.Text(string='Last API Test', readonly=True, copy=False)
+    last_api_error = fields.Text(string='Last API Error', readonly=True, copy=False)
 
     ig_account_ids = fields.One2many('meta.ig.account', 'page_id', string='Instagram Accounts')
     lead_form_ids = fields.One2many('meta.lead.form', 'page_id', string='Lead Forms')
@@ -45,6 +51,139 @@ class MetaPage(models.Model):
             return False
 
 
+    def _graph_version(self):
+        version = (self.env['ir.config_parameter'].sudo().get_param('meta.graph_version') or 'v26.0').strip()
+        return version if version.startswith('v') else 'v%s' % version
+
+    def _meta_error_detail(self, response):
+        """Return a safe, useful Meta error without leaking access tokens."""
+        if response is None:
+            return ''
+        try:
+            payload = response.json()
+            error = payload.get('error') if isinstance(payload, dict) else None
+            if error:
+                return json.dumps({
+                    'message': error.get('message'),
+                    'type': error.get('type'),
+                    'code': error.get('code'),
+                    'error_subcode': error.get('error_subcode'),
+                    'fbtrace_id': error.get('fbtrace_id'),
+                }, ensure_ascii=False, indent=2)
+            return json.dumps(payload, ensure_ascii=False, indent=2)[:4000]
+        except Exception:
+            return (response.text or '')[:4000]
+
+    def action_check_token_permissions(self):
+        """Inspect the stored Page token through Meta debug_token."""
+        self.ensure_one()
+        page_token = self.decrypt_token()
+        if not page_token:
+            raise UserError('No valid access token for this page. Re-authorize via Settings.')
+
+        icp = self.env['ir.config_parameter'].sudo()
+        app_id = icp.get_param('meta.app.id')
+        app_secret = icp.get_param('meta.app.secret')
+        if not app_id or not app_secret:
+            raise UserError('Meta App ID and App Secret are required in Settings.')
+
+        url = 'https://graph.facebook.com/%s/debug_token' % self._graph_version()
+        try:
+            resp = requests.get(url, params={
+                'input_token': page_token,
+                'access_token': '%s|%s' % (app_id, app_secret),
+            }, timeout=30)
+            if not resp.ok:
+                detail = self._meta_error_detail(resp)
+                self.last_api_error = detail
+                raise UserError('Could not inspect Meta token.\n%s' % detail)
+            data = resp.json().get('data', {})
+        except requests.RequestException as e:
+            response = getattr(e, 'response', None)
+            detail = self._meta_error_detail(response) or str(e)
+            self.last_api_error = detail
+            raise UserError('Could not inspect Meta token.\n%s' % detail)
+
+        scopes = data.get('scopes') or []
+        granular = data.get('granular_scopes') or []
+        self.write({
+            'token_scopes': '\n'.join(scopes),
+            'token_granular_scopes': json.dumps(granular, ensure_ascii=False, indent=2),
+            'last_api_test': json.dumps({
+                'is_valid': data.get('is_valid'),
+                'app_id': data.get('app_id'),
+                'user_id': data.get('user_id'),
+                'type': data.get('type'),
+                'expires_at': data.get('expires_at'),
+                'data_access_expires_at': data.get('data_access_expires_at'),
+            }, ensure_ascii=False, indent=2),
+            'last_api_error': False,
+        })
+
+        required = {'leads_retrieval', 'pages_show_list', 'pages_read_engagement'}
+        missing = sorted(required - set(scopes))
+        message = 'Token is valid. Scopes: %s' % (', '.join(scopes) or 'none')
+        if missing:
+            message += '. Missing: %s' % ', '.join(missing)
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Meta Token Permissions',
+                'message': message,
+                'type': 'warning' if missing else 'success',
+                'sticky': True,
+            }
+        }
+
+    def action_test_lead_forms_access(self):
+        """Test the smallest useful Lead Forms request and store Meta's exact response."""
+        self.ensure_one()
+        access_token = self.decrypt_token()
+        if not access_token:
+            raise UserError('No valid access token for this page. Re-authorize via Settings.')
+
+        url = 'https://graph.facebook.com/%s/%s/leadgen_forms' % (self._graph_version(), self.page_id)
+        try:
+            resp = requests.get(url, params={
+                'access_token': access_token,
+                'fields': 'id,name,status,locale',
+                'limit': 5,
+            }, timeout=30)
+            if not resp.ok:
+                detail = self._meta_error_detail(resp)
+                self.write({'last_api_error': detail, 'last_api_test': False})
+                raise UserError('Lead Forms access test failed.\n%s' % detail)
+            payload = resp.json()
+        except requests.RequestException as e:
+            response = getattr(e, 'response', None)
+            detail = self._meta_error_detail(response) or str(e)
+            self.write({'last_api_error': detail, 'last_api_test': False})
+            raise UserError('Lead Forms access test failed.\n%s' % detail)
+
+        forms = payload.get('data', [])
+        summary = {
+            'success': True,
+            'page_id': self.page_id,
+            'forms_returned': len(forms),
+            'forms': [{'id': f.get('id'), 'name': f.get('name'), 'status': f.get('status')} for f in forms],
+        }
+        self.write({
+            'last_api_test': json.dumps(summary, ensure_ascii=False, indent=2),
+            'last_api_error': False,
+        })
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Lead Forms Access',
+                'message': 'Success. Meta returned %d form(s).' % len(forms),
+                'type': 'success',
+                'sticky': True,
+            }
+        }
+
+
     def action_subscribe_webhook(self):
         """Subscribe this Facebook Page to the app's leadgen webhook field."""
         self.ensure_one()
@@ -52,9 +191,7 @@ class MetaPage(models.Model):
         if not access_token:
             raise UserError('No valid access token for this page. Re-authorize via Settings.')
 
-        graph_version = self.env['ir.config_parameter'].sudo().get_param(
-            'meta.graph_version', 'v26.0'
-        )
+        graph_version = self._graph_version()
         url = 'https://graph.facebook.com/%s/%s/subscribed_apps' % (graph_version, self.page_id)
         try:
             resp = requests.post(url, data={
@@ -89,9 +226,7 @@ class MetaPage(models.Model):
         if not access_token:
             raise UserError('No valid access token for this page. Re-authorize via Settings.')
 
-        graph_version = self.env['ir.config_parameter'].sudo().get_param(
-            'meta.graph_version', 'v26.0'
-        )
+        graph_version = self._graph_version()
         url = 'https://graph.facebook.com/%s/%s/subscribed_apps' % (graph_version, self.page_id)
         try:
             resp = requests.get(url, params={
@@ -124,21 +259,23 @@ class MetaPage(models.Model):
         if not access_token:
             raise UserError('No valid access token for this page. Re-authorize via Settings.')
 
-        graph_version = self.env['ir.config_parameter'].sudo().get_param(
-            'meta.graph_version', 'v26.0'
-        )
+        graph_version = self._graph_version()
         url = 'https://graph.facebook.com/%s/%s/leadgen_forms' % (graph_version, self.page_id)
         params = {
             'access_token': access_token,
-            'fields': 'id,name,status,locale,questions,privacy_policy,thank_you_page,follow_up',
+            'fields': 'id,name,status,locale,questions',
         }
         try:
             resp = requests.get(url, params=params, timeout=30)
             resp.raise_for_status()
             data = resp.json()
         except requests.RequestException as e:
-            raise UserError('Meta API request failed: %s' % str(e))
+            response = getattr(e, 'response', None)
+            detail = self._meta_error_detail(response) or str(e)
+            self.last_api_error = detail
+            raise UserError('Meta API request failed.\n%s' % detail)
 
+        self.last_api_error = False
         forms = data.get('data', [])
         created, updated = 0, 0
         for form_data in forms:

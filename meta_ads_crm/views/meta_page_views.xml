@@ -28,6 +28,10 @@
                             string="Check Subscription" class="btn btn-secondary"/>
                     <button name="action_sync_forms" type="object"
                             string="Sync Lead Forms" class="btn btn-primary"/>
+                    <button name="action_check_token_permissions" type="object"
+                            string="Check Token Permissions" class="btn btn-secondary"/>
+                    <button name="action_test_lead_forms_access" type="object"
+                            string="Test Lead Forms Access" class="btn btn-secondary"/>
                 </header>
                 <sheet>
                     <div class="oe_title">
@@ -48,6 +52,14 @@
                     <notebook>
                         <page string="Lead Forms" name="forms">
                             <field name="lead_form_ids"/>
+                        </page>
+                        <page string="Diagnostics" name="diagnostics">
+                            <group>
+                                <field name="token_scopes" widget="text"/>
+                                <field name="token_granular_scopes" widget="text"/>
+                                <field name="last_api_test" widget="text"/>
+                                <field name="last_api_error" widget="text"/>
+                            </group>
                         </page>
                         <page string="Instagram" name="instagram">
                             <field name="ig_account_ids"/>
