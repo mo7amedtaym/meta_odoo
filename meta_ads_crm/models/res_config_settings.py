@@ -80,18 +80,52 @@ class ResConfigSettings(models.TransientModel):
             record.meta_connected = bool(token)
 
     def action_generate_fernet_key(self):
+        icp = self.env['ir.config_parameter'].sudo()
+        if icp.get_param('meta.fernet_key'):
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Encryption Key',
+                    'message': 'An encryption key already exists. It was not replaced to avoid invalidating stored Page tokens.',
+                    'type': 'info',
+                    'sticky': False,
+                },
+            }
         try:
             from cryptography.fernet import Fernet
             key = Fernet.generate_key().decode()
-            self.env['ir.config_parameter'].sudo().set_param('meta.fernet_key', key)
+            icp.set_param('meta.fernet_key', key)
         except ImportError:
             raise UserError('The cryptography package is not installed. Run: pip install cryptography')
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Encryption Key',
+                'message': 'Encryption key generated successfully.',
+                'type': 'success',
+                'sticky': False,
+            },
+        }
 
     def action_connect_meta(self):
         """Redirect to Meta OAuth dialog using the configured public HTTPS URL."""
         self.ensure_one()
         if not self.meta_app_id:
             raise UserError('Please enter your Meta App ID first.')
+        if not self.meta_app_secret:
+            raise UserError('Please enter your Meta App Secret first.')
+
+        # Page access tokens are encrypted locally. Ensure the encryption key
+        # exists before OAuth so page tokens are never imported unencrypted.
+        icp = self.env['ir.config_parameter'].sudo()
+        if not icp.get_param('meta.fernet_key'):
+            try:
+                from cryptography.fernet import Fernet
+                icp.set_param('meta.fernet_key', Fernet.generate_key().decode())
+            except ImportError:
+                raise UserError('The cryptography package is not installed. Run: pip install cryptography')
 
         base_url = self._get_meta_public_base_url()
         if not base_url:
@@ -109,6 +143,7 @@ class ResConfigSettings(models.TransientModel):
             'pages_show_list',
             'pages_read_engagement',
             'pages_manage_metadata',
+            'pages_manage_ads',
             'ads_management',
         ])
         params = urlencode({
@@ -129,4 +164,8 @@ class ResConfigSettings(models.TransientModel):
         """Clear stored token."""
         self.env['ir.config_parameter'].sudo().set_param('meta.long_lived_token', '')
         self.env['ir.config_parameter'].sudo().set_param('meta.token_expiry', '')
-        self.env['meta.page'].search([]).write({'active': False})
+        self.env['meta.page'].search([]).write({
+            'active': False,
+            'access_token_encrypted': False,
+            'webhook_subscribed': False,
+        })

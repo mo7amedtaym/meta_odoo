@@ -1,35 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Extend CRM Lead Form: add Meta Ads info -->
     <record id="crm_lead_view_form_meta" model="ir.ui.view">
         <field name="name">crm.lead.form.meta.ads</field>
         <field name="model">crm.lead</field>
         <field name="inherit_id" ref="crm.crm_lead_view_form"/>
         <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_reapply_meta_mapping"
+                        string="Reapply Meta Mapping"
+                        type="object"
+                        class="btn-secondary"
+                        invisible="not is_meta_lead or not meta_raw_data or not meta_form_id"/>
+            </xpath>
             <xpath expr="//notebook" position="inside">
-                <page string="Meta Ads" name="meta_ads"
-                      invisible="not is_meta_lead">
+                <page string="Meta Ads" name="meta_ads" invisible="not is_meta_lead">
                     <group>
                         <group string="Meta Source">
-                            <field name="is_meta_lead"/>
-                            <field name="meta_form_id"/>
-                            <field name="meta_platform"/>
+                            <field name="is_meta_lead" readonly="1"/>
+                            <field name="meta_form_id" readonly="1"/>
+                            <field name="meta_platform" readonly="1"/>
                         </group>
                         <group string="Meta Campaign">
-                            <field name="meta_campaign_id"/>
-                            <field name="meta_ad_id"/>
-                            <field name="meta_leadgen_id"/>
+                            <field name="meta_campaign_id" readonly="1"/>
+                            <field name="meta_ad_id" readonly="1"/>
+                            <field name="meta_leadgen_id" readonly="1"/>
                         </group>
                     </group>
                     <group string="Raw Data" invisible="not meta_raw_data">
-                        <field name="meta_raw_data" nolabel="1" readonly="1"/>
+                        <field name="meta_raw_data_pretty"
+                               nolabel="1"
+                               readonly="1"
+                               widget="text"
+                               class="oe_full_width"/>
                     </group>
                 </page>
             </xpath>
         </field>
     </record>
 
-    <!-- Extend CRM Lead Search: add Meta filter -->
     <record id="crm_lead_view_search_meta" model="ir.ui.view">
         <field name="name">crm.lead.search.meta.ads</field>
         <field name="model">crm.lead</field>

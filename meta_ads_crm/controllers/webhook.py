@@ -30,7 +30,10 @@ class MetaWebhookController(http.Controller):
         app_secret = request.env['ir.config_parameter'].sudo().get_param('meta.app.secret')
         signature = request.httprequest.headers.get('X-Hub-Signature-256', '')
 
-        if app_secret and signature:
+        if app_secret:
+            if not signature:
+                _logger.warning('Meta webhook: missing X-Hub-Signature-256 header')
+                return request.make_json_response({'status': 'error', 'message': 'Missing signature'}, status=403)
             expected_sig = hmac.new(app_secret.encode(), raw_payload, hashlib.sha256).hexdigest()
             if not hmac.compare_digest('sha256=%s' % expected_sig, signature):
                 _logger.warning('Meta webhook: invalid signature')

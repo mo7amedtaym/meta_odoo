@@ -81,9 +81,11 @@ class MetaLeadLog(models.Model):
 
     def _fetch_lead_data(self, access_token):
         """Call Meta Graph API to get full lead data."""
-        graph_version = self.env['ir.config_parameter'].sudo().get_param(
+        graph_version = (self.env['ir.config_parameter'].sudo().get_param(
             'meta.graph_version', 'v26.0'
-        )
+        ) or 'v26.0').strip()
+        if not graph_version.startswith('v'):
+            graph_version = 'v%s' % graph_version
         url = 'https://graph.facebook.com/%s/%s' % (graph_version, self.leadgen_id)
         params = {'access_token': access_token}
         try:
@@ -91,55 +93,37 @@ class MetaLeadLog(models.Model):
             resp.raise_for_status()
             return resp.json()
         except requests.RequestException as e:
-            self._mark_error('Meta API request failed: %s' % str(e))
+            response = getattr(e, 'response', None)
+            detail = 'Network error while contacting Meta.'
+            if response is not None:
+                try:
+                    payload = response.json()
+                    error = payload.get('error', {}) if isinstance(payload, dict) else {}
+                    detail = 'Meta API error: %s (code=%s, subcode=%s, trace=%s)' % (
+                        error.get('message') or 'Unknown error',
+                        error.get('code'),
+                        error.get('error_subcode'),
+                        error.get('fbtrace_id'),
+                    )
+                except Exception:
+                    detail = 'Meta API returned HTTP %s.' % response.status_code
+            self._mark_error(detail)
             return None
 
     def _create_crm_lead(self, lead_data):
         """Map Meta field_data to CRM lead fields and create the record."""
         if not self.form_id:
-            self._mark_error('No linked lead form. Create a meta.lead.form record for form_id "%s".' % (
-                lead_data.get('form_id', '?')
-            ))
+            self._mark_error(
+                'No linked lead form. Create/sync a meta.lead.form record for form_id "%s".'
+                % (lead_data.get('form_id', '?'))
+            )
             return None
 
         form = self.form_id
-        field_data = lead_data.get('field_data', [])
+        lead_vals = form._prepare_crm_lead_values(lead_data)
 
-        # Build a lookup: meta field name -> list of values
-        meta_fields = {}
-        for fd in field_data:
-            name = fd.get('name', '')
-            values = fd.get('values', [])
-            meta_fields[name] = values
-
-        # Apply field mappings
-        lead_vals = {}
-        for mapping in form.field_mapping_ids:
-            odoo_field = mapping.odoo_field_name
-            meta_values = meta_fields.get(mapping.meta_key, [])
-            if not odoo_field or not meta_values:
-                continue
-
-            value = meta_values[0] if len(meta_values) == 1 else ', '.join(str(v) for v in meta_values)
-
-            # Handle Many2one fields (partner_name, user_id, team_id, stage_id)
-            if odoo_field in ('user_id', 'team_id'):
-                try:
-                    lead_vals[odoo_field] = int(value)
-                except (ValueError, TypeError):
-                    pass
-            elif odoo_field == 'stage_id':
-                try:
-                    lead_vals[odoo_field] = int(value)
-                except (ValueError, TypeError):
-                    pass
-            else:
-                lead_vals[odoo_field] = value
-
-        # Set type
+        # Set type and defaults configured on the Meta form.
         lead_vals['type'] = 'lead' if form.import_mode == 'lead' else 'opportunity'
-
-        # Stamp defaults from form config
         if form.team_id:
             lead_vals.setdefault('team_id', form.team_id.id)
         if form.user_id:
@@ -147,36 +131,30 @@ class MetaLeadLog(models.Model):
         if form.tag_ids:
             lead_vals['tag_ids'] = [(6, 0, form.tag_ids.ids)]
 
-        # Meta traceability fields
+        # Meta traceability fields.
         lead_vals.update({
             'meta_leadgen_id': self.leadgen_id,
             'meta_form_id': form.id,
-            'meta_campaign_id': self.campaign_id or False,
-            'meta_ad_id': self.ad_id or False,
-            'meta_platform': self.platform or 'facebook',
+            'meta_campaign_id': self.campaign_id or lead_data.get('campaign_id') or False,
+            'meta_ad_id': self.ad_id or lead_data.get('ad_id') or False,
+            'meta_platform': self.platform or lead_data.get('platform') or 'facebook',
             'meta_raw_data': lead_data,
             'is_meta_lead': True,
         })
 
-        # Fallback: if no name was mapped, build one from available data
-        if not lead_vals.get('contact_name') and not lead_vals.get('name'):
-            name_parts = []
-            for key in ('full_name', 'first_name', 'last_name', 'name'):
-                vals = meta_fields.get(key, [])
-                if vals:
-                    name_parts.append(str(vals[0]))
-                    break
-            if name_parts:
-                lead_vals['contact_name'] = name_parts[0]
-            else:
-                lead_vals['contact_name'] = 'Meta Lead %s' % self.leadgen_id
-
-        # Ensure name field (crm.lead required)
-        if 'name' not in lead_vals:
-            lead_vals['name'] = lead_vals.get('contact_name', 'Meta Lead %s' % self.leadgen_id)
+        # crm.lead.name is required; use meaningful customer data whenever possible.
+        if not lead_vals.get('name'):
+            lead_vals['name'] = (
+                lead_vals.get('contact_name')
+                or lead_vals.get('partner_name')
+                or lead_vals.get('email_from')
+                or 'Meta Lead %s' % self.leadgen_id
+            )
 
         try:
-            return self.env['crm.lead'].create(lead_vals)
+            lead = self.env['crm.lead'].create(lead_vals)
+            form.last_lead_time = fields.Datetime.now()
+            return lead
         except Exception as e:
             self._mark_error('Failed to create CRM lead: %s' % str(e))
             return None

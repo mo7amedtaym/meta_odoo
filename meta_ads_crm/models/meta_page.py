@@ -120,7 +120,14 @@ class MetaPage(models.Model):
             'last_api_error': False,
         })
 
-        required = {'leads_retrieval', 'pages_show_list', 'pages_read_engagement'}
+        required = {
+            'leads_retrieval',
+            'pages_show_list',
+            'pages_read_engagement',
+            'pages_manage_metadata',
+            'pages_manage_ads',
+            'ads_management',
+        }
         missing = sorted(required - set(scopes))
         message = 'Token is valid. Scopes: %s' % (', '.join(scopes) or 'none')
         if missing:
@@ -201,8 +208,10 @@ class MetaPage(models.Model):
             resp.raise_for_status()
             data = resp.json()
         except requests.RequestException as e:
-            detail = getattr(e.response, 'text', '') if getattr(e, 'response', None) is not None else ''
-            raise UserError('Meta webhook subscription failed: %s %s' % (str(e), detail))
+            response = getattr(e, 'response', None)
+            detail = self._meta_error_detail(response) or 'Network error while contacting Meta.'
+            self.last_api_error = detail
+            raise UserError('Meta webhook subscription failed.\n%s' % detail)
 
         if not data.get('success'):
             raise UserError('Meta did not confirm the webhook subscription: %s' % data)
@@ -236,8 +245,10 @@ class MetaPage(models.Model):
             resp.raise_for_status()
             data = resp.json().get('data', [])
         except requests.RequestException as e:
-            detail = getattr(e.response, 'text', '') if getattr(e, 'response', None) is not None else ''
-            raise UserError('Could not check Meta webhook subscription: %s %s' % (str(e), detail))
+            response = getattr(e, 'response', None)
+            detail = self._meta_error_detail(response) or 'Network error while contacting Meta.'
+            self.last_api_error = detail
+            raise UserError('Could not check Meta webhook subscription.\n%s' % detail)
 
         subscribed = any('leadgen' in (item.get('subscribed_fields') or []) for item in data)
         self.webhook_subscribed = subscribed

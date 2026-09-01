@@ -34,6 +34,7 @@
                                     <label for="meta_public_base_url" class="o_light_label"/>
                                     <field name="meta_public_base_url" placeholder="https://testmeta.o.cm.sa"/>
                                     <div class="text-muted">Use the public HTTPS URL only, without a trailing slash.</div>
+                                    <div class="text-muted mt8">Required OAuth scopes: leads_retrieval, pages_show_list, pages_read_engagement, pages_manage_metadata, pages_manage_ads, ads_management.</div>
                                 </div>
                             </div>
                         </setting>

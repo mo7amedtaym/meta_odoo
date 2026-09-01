@@ -3,29 +3,34 @@
     <menuitem id="menu_meta_ads_root"
               name="Meta Ads"
               parent="crm.crm_menu_config"
-              sequence="50"/>
+              sequence="50"
+              groups="meta_ads_crm.group_meta_ads_user"/>
 
     <menuitem id="menu_meta_ads_pages"
               name="Pages"
               parent="menu_meta_ads_root"
               action="action_meta_page"
-              sequence="10"/>
+              sequence="10"
+              groups="meta_ads_crm.group_meta_ads_user"/>
 
     <menuitem id="menu_meta_ads_lead_forms"
               name="Lead Forms"
               parent="menu_meta_ads_root"
               action="action_meta_lead_form"
-              sequence="20"/>
+              sequence="20"
+              groups="meta_ads_crm.group_meta_ads_user"/>
 
     <menuitem id="menu_meta_ads_lead_logs"
               name="Lead Logs"
               parent="menu_meta_ads_root"
               action="action_meta_lead_log"
-              sequence="30"/>
+              sequence="30"
+              groups="meta_ads_crm.group_meta_ads_user"/>
 
     <menuitem id="menu_meta_ads_settings"
               name="Settings"
               parent="menu_meta_ads_root"
               action="meta_config_settings_action"
-              sequence="50"/>
+              sequence="50"
+              groups="meta_ads_crm.group_meta_ads_manager"/>
 </odoo>

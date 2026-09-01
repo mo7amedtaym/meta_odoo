@@ -1,8 +1,8 @@
 {
     'name': 'Meta Ads CRM & Lead Connector',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.3.0',
     'category': 'Sales/CRM',
-    'summary': 'Connect Facebook/Instagram Lead Ads with Odoo CRM, sync posts, and boost posts',
+    'summary': 'Connect Meta Lead Ads with Odoo CRM using OAuth, Webhooks and Lead Forms',
     'author': 'Recent Technologies',
     'website': 'mailto:rajodoodevelop@gmail.com',
     'support': 'rajodoodevelop@gmail.com',
