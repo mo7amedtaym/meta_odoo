@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="payment_provider_form_tap" model="ir.ui.view">
+        <field name="name">payment.provider.form.tap</field>
+        <field name="model">payment.provider</field>
+        <field name="inherit_id" ref="payment.payment_provider_form"/>
+        <field name="arch" type="xml">
+            <group name="provider_credentials" position="inside">
+                <group invisible="code != 'tap'">
+                    <field name="tap_publishable_key" password="True" required="code == 'tap' and state in ('enabled', 'test')"/>
+                    <field name="tap_secret_key" password="True" required="code == 'tap' and state in ('enabled', 'test')"/>
+                    <field name="tap_merchant_id"/>
+                </group>
+            </group>
+            <group name="payment_form" position="inside">
+                <group string="Tap Checkout" invisible="code != 'tap'">
+                    <field name="tap_source_id" required="code == 'tap'"/>
+                    <field name="tap_language" required="code == 'tap'"/>
+                    <div class="text-muted" colspan="2">
+                        Card data is entered on Tap's hosted checkout. Odoo does not store card numbers or CVV.
+                    </div>
+                </group>
+            </group>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,24 @@
+# Translation of Odoo Server.
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo 19\n"
+"Language: ar\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+msgid "Tap Payments"
+msgstr "تاب للمدفوعات"
+
+msgid "Secret API Key"
+msgstr "مفتاح API السري"
+
+msgid "Publishable API Key"
+msgstr "مفتاح API العام"
+
+msgid "Merchant ID"
+msgstr "معرّف التاجر"
+
+msgid "Checkout Language"
+msgstr "لغة صفحة الدفع"
+
+msgid "Tap Payment Source"
+msgstr "طريقة الدفع في Tap"
