@@ -126,6 +126,8 @@ class MetaLeadLog(models.Model):
         lead_vals['type'] = 'lead' if form.import_mode == 'lead' else 'opportunity'
         if form.team_id:
             lead_vals.setdefault('team_id', form.team_id.id)
+        if form.import_mode == 'opportunity' and form.stage_id:
+            lead_vals['stage_id'] = form.stage_id.id
         if form.user_id:
             lead_vals.setdefault('user_id', form.user_id.id)
         if form.tag_ids:

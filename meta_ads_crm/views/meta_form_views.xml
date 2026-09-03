@@ -49,6 +49,10 @@
                         <group string="CRM Settings">
                             <field name="import_mode"/>
                             <field name="team_id"/>
+                            <field name="stage_id"
+                                   invisible="import_mode != 'opportunity'"
+                                   required="import_mode == 'opportunity'"
+                                   domain="['|', ('team_id', '=', False), ('team_id', '=', team_id)]"/>
                             <field name="user_id"/>
                             <field name="tag_ids" widget="many2many_tags"/>
                         </group>

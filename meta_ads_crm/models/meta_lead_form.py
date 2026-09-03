@@ -78,6 +78,11 @@ class MetaLeadForm(models.Model):
         ('lead', 'Lead'),
         ('opportunity', 'Opportunity')
     ], string='Import Mode', default='lead')
+    stage_id = fields.Many2one(
+        'crm.stage',
+        string='Opportunity Stage',
+        help='Stage assigned to CRM opportunities created from this Meta lead form.',
+    )
     team_id = fields.Many2one('crm.team', string='Sales Team')
     user_id = fields.Many2one('res.users', string='Salesperson')
     tag_ids = fields.Many2many('crm.tag', string='Tags')
@@ -87,6 +92,23 @@ class MetaLeadForm(models.Model):
     last_lead_time = fields.Datetime(string='Last Lead Time')
     lead_count = fields.Integer(string='Leads', compute='_compute_lead_count')
     active = fields.Boolean(default=True)
+
+    @api.onchange('import_mode')
+    def _onchange_import_mode(self):
+        """A stage only applies when this form creates opportunities."""
+        if self.import_mode != 'opportunity':
+            self.stage_id = False
+
+    @api.onchange('team_id')
+    def _onchange_team_id(self):
+        """Clear a team-specific stage when it no longer matches the selected team."""
+        if (
+            self.stage_id
+            and self.stage_id.team_id
+            and self.team_id
+            and self.stage_id.team_id != self.team_id
+        ):
+            self.stage_id = False
 
     def action_sync_from_meta(self):
         """Sync this form's definition from Meta API via its parent page."""
