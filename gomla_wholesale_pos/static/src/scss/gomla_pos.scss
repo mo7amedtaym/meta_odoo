@@ -1,0 +1,26 @@
+.pos {
+    --gomla-primary: #2563eb;
+    --gomla-radius: 0.75rem;
+    --gomla-space: 0.5rem;
+
+    direction: rtl;
+
+    .gomla-shipment-button {
+        border-radius: var(--gomla-radius);
+        background: var(--gomla-primary);
+        color: #fff;
+        min-height: 3rem;
+    }
+
+    .gomla-line-meta {
+        margin-top: var(--gomla-space);
+        direction: rtl;
+
+        .badge {
+            font-size: 0.78rem;
+            border-radius: 999px;
+            padding: 0.35rem 0.55rem;
+        }
+    }
+}
+

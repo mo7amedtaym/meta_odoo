@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="gomla_wholesale_pos.ControlButtons" t-inherit="point_of_sale.ControlButtons" t-inherit-mode="extension">
+        <xpath expr="//SelectPartnerButton" position="after">
+            <button t-if="pos.config.gomla_pos_enabled and !props.showRemainingButtons"
+                    class="btn btn-primary btn-lg border-0 text-nowrap gomla-shipment-button"
+                    t-on-click="clickGomlaDetails">
+                <i class="fa fa-truck me-2"/>
+                بيانات الشحنة
+            </button>
+        </xpath>
+        <xpath expr="//div[contains(@class, 'control-buttons-modal')]" position="inside">
+            <button t-if="pos.config.gomla_pos_enabled"
+                    t-att-class="buttonClass"
+                    class="gomla-shipment-button"
+                    t-on-click="clickGomlaDetails">
+                <i class="fa fa-truck me-2"/>
+                بيانات الشحنة
+            </button>
+        </xpath>
+    </t>
+</templates>
+

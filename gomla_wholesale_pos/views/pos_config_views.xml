@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="pos_config_view_form_gomla" model="ir.ui.view">
+        <field name="name">pos.config.form.gomla</field>
+        <field name="model">pos.config</field>
+        <field name="inherit_id" ref="point_of_sale.pos_config_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Gomla Wholesale" name="gomla_wholesale">
+                    <group>
+                        <group string="Operation">
+                            <field name="gomla_pos_enabled"/>
+                            <field name="gomla_require_shipment" invisible="not gomla_pos_enabled"/>
+                            <field name="gomla_nearly_finished_percent" invisible="not gomla_pos_enabled"/>
+                        </group>
+                        <group string="Charge Products" invisible="not gomla_pos_enabled">
+                            <field name="gomla_seller_commission_product_id" options="{'no_create': False}"/>
+                            <field name="gomla_crate_deposit_product_id" options="{'no_create': False}"/>
+                            <field name="gomla_default_crate_deposit"/>
+                        </group>
+                    </group>
+                    <div class="alert alert-info" role="alert" invisible="not gomla_pos_enabled">
+                        Charge products must be service products and available in Point of Sale. They are separate order lines so payments and supplier gross sales remain correct.
+                    </div>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+

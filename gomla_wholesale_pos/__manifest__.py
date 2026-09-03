@@ -1,0 +1,30 @@
+{
+    "name": "Gomla Wholesale Fruit Market POS",
+    "summary": "Shipment-linked wholesale selling for Odoo 19 Point of Sale",
+    "version": "19.0.1.0.0",
+    "category": "Sales/Point of Sale",
+    "author": "Gomla POS Team",
+    "license": "LGPL-3",
+    "depends": ["point_of_sale", "mail"],
+    "data": [
+        "security/gomla_security.xml",
+        "security/ir.model.access.csv",
+        "data/ir_sequence.xml",
+        "data/charge_products.xml",
+        "views/gomla_shipment_views.xml",
+        "views/res_partner_views.xml",
+        "views/pos_config_views.xml",
+        "views/gomla_menus.xml",
+    ],
+    "assets": {
+        "point_of_sale._assets_pos": [
+            "gomla_wholesale_pos/static/src/app/models/pos_order_line.js",
+            "gomla_wholesale_pos/static/src/app/control_buttons/gomla_control_buttons.js",
+            "gomla_wholesale_pos/static/src/app/control_buttons/gomla_control_buttons.xml",
+            "gomla_wholesale_pos/static/src/app/orderline/gomla_orderline.xml",
+            "gomla_wholesale_pos/static/src/scss/gomla_pos.scss",
+        ],
+    },
+    "installable": True,
+    "application": True,
+}

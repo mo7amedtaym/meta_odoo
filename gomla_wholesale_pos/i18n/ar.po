@@ -1,0 +1,151 @@
+# Translation of Odoo Server.
+# This file contains the translation of gomla_wholesale_pos.
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 19.0\n"
+"PO-Revision-Date: 2026-09-03 00:00+0000\n"
+"Last-Translator: Gomla POS Team\n"
+"Language-Team: Arabic\n"
+"Language: ar\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
+
+msgid "Gomla Wholesale POS"
+msgstr "نقطة بيع سوق الجملة"
+
+msgid "Gomla User"
+msgstr "مستخدم سوق الجملة"
+
+msgid "Gomla Manager"
+msgstr "مدير سوق الجملة"
+
+msgid "Gomla POS"
+msgstr "نقطة بيع الجملة"
+
+msgid "Operations"
+msgstr "العمليات"
+
+msgid "Shipments"
+msgstr "الشحنات"
+
+msgid "Supplier Ledger"
+msgstr "حساب الموردين"
+
+msgid "Shipment Number"
+msgstr "رقم الشحنة"
+
+msgid "Supplier"
+msgstr "المورد"
+
+msgid "Arrival Date"
+msgstr "تاريخ الوصول"
+
+msgid "Active"
+msgstr "نشطة"
+
+msgid "Nearly Finished"
+msgstr "قاربت على النفاد"
+
+msgid "Stock Finished"
+msgstr "نفدت الكمية"
+
+msgid "Pending Settlement"
+msgstr "بانتظار التصفية"
+
+msgid "Settled / Closed"
+msgstr "تمت التصفية والإغلاق"
+
+msgid "Produce Lines"
+msgstr "أصناف الزرع"
+
+msgid "Supplier Commission %"
+msgstr "نسبة عمولة المورد %"
+
+msgid "Freight"
+msgstr "النولون"
+
+msgid "El-Aqlamiya"
+msgstr "الأقلمية"
+
+msgid "Received Quantity"
+msgstr "الكمية المستلمة"
+
+msgid "Sold Quantity"
+msgstr "الكمية المباعة"
+
+msgid "Remaining Quantity"
+msgstr "الكمية المتبقية"
+
+msgid "Gross Sales"
+msgstr "إجمالي المبيعات"
+
+msgid "Seller Commission / بياعة"
+msgstr "البياعة"
+
+msgid "Supplier Net Preview"
+msgstr "معاينة صافي المورد"
+
+msgid "Approve and Close Settlement"
+msgstr "اعتماد وإغلاق التصفية"
+
+msgid "Produce"
+msgstr "الزرع"
+
+msgid "Financial Summary"
+msgstr "الملخص المالي"
+
+msgid "Wholesale Produce Supplier"
+msgstr "مورد زرع جملة"
+
+msgid "Default Supplier Commission %"
+msgstr "نسبة عمولة المورد الافتراضية %"
+
+msgid "Uses Crate Custody"
+msgstr "يستخدم عهدة البرانيك"
+
+msgid "Agreement Notes"
+msgstr "ملاحظات الاتفاق"
+
+msgid "Gomla Supplier Balance"
+msgstr "رصيد المورد"
+
+msgid "Enable Gomla Wholesale Mode"
+msgstr "تفعيل وضع سوق الجملة"
+
+msgid "Require Shipment for Stockable Products"
+msgstr "إلزام الأصناف المخزنية بشحنة"
+
+msgid "Nearly Finished Threshold %"
+msgstr "نسبة اقتراب النفاد %"
+
+msgid "Seller Commission Product"
+msgstr "منتج البياعة"
+
+msgid "Crate Deposit Product"
+msgstr "منتج رهن البرانيك"
+
+msgid "Default Deposit per Crate"
+msgstr "الرهن الافتراضي للبرنيكة"
+
+msgid "Package / Box Count"
+msgstr "عدد العبوات / الصناديق"
+
+msgid "Crate Quantity"
+msgstr "عدد البرانيك"
+
+msgid "Crate Deposit"
+msgstr "رهن البرانيك"
+
+msgid "An approved settlement is immutable."
+msgstr "لا يمكن تعديل التصفية بعد اعتمادها."
+
+msgid "A shipment is required for: %s"
+msgstr "يجب اختيار شحنة للصنف: %s"
+
+msgid "The selected shipment is not available for sale."
+msgstr "الشحنة المختارة غير متاحة للبيع."
+
+msgid "Shipment stock is finished and is ready for settlement."
+msgstr "نفدت كمية الشحنة وأصبحت جاهزة للتصفية."

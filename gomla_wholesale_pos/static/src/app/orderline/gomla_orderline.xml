@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <t t-name="gomla_wholesale_pos.Orderline" t-inherit="point_of_sale.Orderline" t-inherit-mode="extension">
+        <xpath expr="//ul[contains(@class, 'info-list')]" position="inside">
+            <li t-if="line.gomla_shipment_line_id" class="gomla-line-meta d-flex flex-wrap gap-2">
+                <span class="badge text-bg-primary">
+                    <i class="fa fa-truck me-1"/>
+                    <t t-esc="line.gomla_shipment_id?.name"/>
+                </span>
+                <span t-if="line.gomla_count" class="badge text-bg-light">
+                    <t t-esc="line.gomla_count"/> عبوة
+                </span>
+                <span t-if="line.gomla_weight" class="badge text-bg-light">
+                    <t t-esc="line.gomla_weight"/> <t t-esc="line.product_id?.uom_id?.name"/>
+                </span>
+                <span t-if="line.gomla_seller_commission" class="badge text-bg-warning">
+                    بياعة: <t t-esc="line.gomla_seller_commission"/>
+                </span>
+                <span t-if="line.gomla_crate_qty" class="badge text-bg-info">
+                    برانيك: <t t-esc="line.gomla_crate_qty"/>
+                </span>
+            </li>
+        </xpath>
+    </t>
+</templates>
+

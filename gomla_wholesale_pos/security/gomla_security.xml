@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="module_category_gomla" model="ir.module.category">
+        <field name="name">Gomla Wholesale POS</field>
+        <field name="sequence">35</field>
+    </record>
+
+    <record id="privilege_gomla" model="res.groups.privilege">
+        <field name="name">Gomla Wholesale POS</field>
+        <field name="sequence">35</field>
+        <field name="category_id" ref="module_category_gomla"/>
+    </record>
+
+    <record id="group_gomla_user" model="res.groups">
+        <field name="name">Gomla User</field>
+        <field name="sequence">10</field>
+        <field name="privilege_id" ref="privilege_gomla"/>
+        <field name="implied_ids" eval="[(4, ref('point_of_sale.group_pos_user'))]"/>
+    </record>
+
+    <record id="group_gomla_manager" model="res.groups">
+        <field name="name">Gomla Manager</field>
+        <field name="sequence">20</field>
+        <field name="privilege_id" ref="privilege_gomla"/>
+        <field name="implied_ids" eval="[(4, ref('gomla_wholesale_pos.group_gomla_user')), (4, ref('point_of_sale.group_pos_manager'))]"/>
+    </record>
+
+    <record id="rule_gomla_shipment_company" model="ir.rule">
+        <field name="name">Gomla shipment company</field>
+        <field name="model_id" ref="model_gomla_shipment"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('gomla_wholesale_pos.group_gomla_user'))]"/>
+    </record>
+
+    <record id="rule_gomla_ledger_company" model="ir.rule">
+        <field name="name">Gomla supplier ledger company</field>
+        <field name="model_id" ref="model_gomla_supplier_ledger"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+        <field name="groups" eval="[(4, ref('gomla_wholesale_pos.group_gomla_user'))]"/>
+    </record>
+</odoo>

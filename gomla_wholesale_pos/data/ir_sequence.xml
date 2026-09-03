@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="seq_gomla_shipment" model="ir.sequence">
+        <field name="name">Gomla Shipment</field>
+        <field name="code">gomla.shipment</field>
+        <field name="prefix">SH-</field>
+        <field name="padding">6</field>
+        <field name="company_id" eval="False"/>
+    </record>
+</odoo>
+

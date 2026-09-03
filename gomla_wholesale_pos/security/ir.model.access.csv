@@ -1,0 +1,10 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_gomla_shipment_user,gomla.shipment user,model_gomla_shipment,gomla_wholesale_pos.group_gomla_user,1,1,1,0
+access_gomla_shipment_manager,gomla.shipment manager,model_gomla_shipment,gomla_wholesale_pos.group_gomla_manager,1,1,1,1
+access_gomla_shipment_line_user,gomla.shipment.line user,model_gomla_shipment_line,gomla_wholesale_pos.group_gomla_user,1,1,1,0
+access_gomla_shipment_line_manager,gomla.shipment.line manager,model_gomla_shipment_line,gomla_wholesale_pos.group_gomla_manager,1,1,1,1
+access_gomla_settlement_user,gomla.shipment.settlement user,model_gomla_shipment_settlement,gomla_wholesale_pos.group_gomla_user,1,0,0,0
+access_gomla_settlement_manager,gomla.shipment.settlement manager,model_gomla_shipment_settlement,gomla_wholesale_pos.group_gomla_manager,1,1,1,0
+access_gomla_ledger_user,gomla.supplier.ledger user,model_gomla_supplier_ledger,gomla_wholesale_pos.group_gomla_user,1,0,0,0
+access_gomla_ledger_manager,gomla.supplier.ledger manager,model_gomla_supplier_ledger,gomla_wholesale_pos.group_gomla_manager,1,1,1,0
+

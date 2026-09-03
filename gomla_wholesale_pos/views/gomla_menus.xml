@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_gomla_root" name="Gomla POS" sequence="25" groups="gomla_wholesale_pos.group_gomla_user"/>
+    <menuitem id="menu_gomla_operations" name="Operations" parent="menu_gomla_root" sequence="10"/>
+    <menuitem id="menu_gomla_shipments" name="Shipments" parent="menu_gomla_operations" action="action_gomla_shipment" sequence="10"/>
+    <menuitem id="menu_gomla_supplier_ledger" name="Supplier Ledger" parent="menu_gomla_operations" action="action_gomla_supplier_ledger" sequence="20"/>
+</odoo>
+
