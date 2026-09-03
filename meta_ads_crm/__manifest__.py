@@ -1,6 +1,6 @@
 {
     'name': 'Meta Ads CRM & Lead Connector',
-    'version': '19.0.1.3.1',
+    'version': '19.0.1.3.2',
     'category': 'Sales/CRM',
     'summary': 'Connect Meta Lead Ads with Odoo CRM using OAuth, Webhooks and Lead Forms',
     'author': 'Recent Technologies',

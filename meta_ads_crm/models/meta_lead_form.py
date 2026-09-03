@@ -104,9 +104,8 @@ class MetaLeadForm(models.Model):
         """Clear a team-specific stage when it no longer matches the selected team."""
         if (
             self.stage_id
-            and self.stage_id.team_id
-            and self.team_id
-            and self.stage_id.team_id != self.team_id
+            and self.stage_id.team_ids
+            and (not self.team_id or self.team_id not in self.stage_id.team_ids)
         ):
             self.stage_id = False
 
