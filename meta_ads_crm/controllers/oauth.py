@@ -29,12 +29,24 @@ class MetaOAuthController(http.Controller):
     @http.route('/meta/oauth/callback', type='http', auth='user', methods=['GET'], csrf=False)
     def oauth_callback(self, **kw):
         """Handle OAuth callback from Meta after user authorization."""
-        code = kw.get('code')
-        if not code:
-            _logger.warning('Meta OAuth callback without code: %s', kw)
+        icp = request.env['ir.config_parameter'].sudo()
+
+        oauth_error = kw.get('error')
+        if oauth_error:
+            description = kw.get('error_description') or kw.get('error_message') or oauth_error
+            icp.set_param('meta.oauth.last_status', 'Failed')
+            icp.set_param('meta.oauth.last_error', str(description)[:2000])
+            _logger.warning('Meta OAuth returned an error: %s', description)
             return request.redirect(self._settings_action_url())
 
-        icp = request.env['ir.config_parameter'].sudo()
+        code = kw.get('code')
+        if not code:
+            msg = 'Meta returned to Odoo without an authorization code.'
+            icp.set_param('meta.oauth.last_status', 'Failed')
+            icp.set_param('meta.oauth.last_error', msg)
+            _logger.warning('Meta OAuth callback without code: %s', {k: v for k, v in kw.items() if k != 'code'})
+            return request.redirect(self._settings_action_url())
+
         app_id = icp.get_param('meta.app.id')
         app_secret = icp.get_param('meta.app.secret')
         base_url = self._get_public_base_url(icp)
@@ -42,29 +54,77 @@ class MetaOAuthController(http.Controller):
         graph_version = self._get_graph_version(icp)
 
         if not app_id or not app_secret or not base_url:
+            msg = 'Meta App ID, App Secret, or Public Base URL is missing in Odoo settings.'
+            icp.set_param('meta.oauth.last_status', 'Failed')
+            icp.set_param('meta.oauth.last_error', msg)
             return request.redirect(self._settings_action_url())
 
         try:
             short_token = self._exchange_code_for_token(
                 app_id, app_secret, redirect_uri, code, graph_version
             )
+        except Exception as e:
+            msg = self._safe_request_error(e)
+            icp.set_param('meta.oauth.last_status', 'Failed - token exchange')
+            icp.set_param('meta.oauth.last_error', msg)
+            _logger.exception('Meta OAuth short token exchange failed: %s', msg)
+            return request.redirect(self._settings_action_url())
+
+        token_to_store = short_token
+        expiry = False
+        try:
             long_token, expiry = self._exchange_for_long_lived_token(
                 app_id, app_secret, short_token, graph_version
             )
+            if long_token:
+                token_to_store = long_token
         except Exception as e:
-            _logger.exception('Meta OAuth token exchange failed: %s', e)
-            return request.redirect(self._settings_action_url())
+            msg = self._safe_request_error(e)
+            _logger.warning('Meta long-lived token exchange failed; using short-lived token: %s', msg)
+            icp.set_param('meta.oauth.last_error', 'Connected with short-lived token. Long-lived exchange failed: %s' % msg)
 
-        icp.set_param('meta.long_lived_token', long_token)
+        icp.set_param('meta.long_lived_token', token_to_store)
         if expiry:
             icp.set_param('meta.token_expiry', expiry)
+        else:
+            icp.set_param('meta.token_expiry', '')
 
+        pages_count = 0
         try:
-            self._fetch_and_store_pages(long_token, graph_version)
+            pages_count = self._fetch_and_store_pages(token_to_store, graph_version) or 0
         except Exception as e:
-            _logger.exception('Meta OAuth: page fetch failed: %s', e)
+            msg = self._safe_request_error(e)
+            _logger.exception('Meta OAuth: page fetch failed: %s', msg)
+            existing = icp.get_param('meta.oauth.last_error') or ''
+            icp.set_param('meta.oauth.last_error', (existing + ('\n' if existing else '') + 'Page import failed: ' + msg)[:4000])
 
+        icp.set_param('meta.oauth.last_status', 'Connected (%s page(s) imported)' % pages_count)
         return request.redirect(self._settings_action_url())
+
+    def _safe_request_error(self, exc):
+        """Return Meta error details without leaking access tokens or secrets."""
+        response = getattr(exc, 'response', None)
+        if response is not None:
+            try:
+                data = response.json()
+                error = data.get('error') or {}
+                parts = []
+                if error.get('message'):
+                    parts.append(str(error.get('message')))
+                if error.get('type'):
+                    parts.append('type=%s' % error.get('type'))
+                if error.get('code') is not None:
+                    parts.append('code=%s' % error.get('code'))
+                if error.get('error_subcode') is not None:
+                    parts.append('subcode=%s' % error.get('error_subcode'))
+                if error.get('fbtrace_id'):
+                    parts.append('fbtrace_id=%s' % error.get('fbtrace_id'))
+                if parts:
+                    return ' | '.join(parts)[:2000]
+            except Exception:
+                pass
+            return 'HTTP %s from Meta API' % getattr(response, 'status_code', 'error')
+        return str(exc)[:2000]
 
     def _exchange_code_for_token(self, app_id, app_secret, redirect_uri, code, graph_version):
         url = 'https://graph.facebook.com/%s/oauth/access_token' % graph_version
@@ -98,7 +158,7 @@ class MetaOAuthController(http.Controller):
         return token, expiry
 
     def _fetch_and_store_pages(self, user_token, graph_version):
-        env = request.env(su=True)
+        env = request.env
         url = 'https://graph.facebook.com/%s/me/accounts' % graph_version
         resp = requests.get(url, params={
             'access_token': user_token,
@@ -132,8 +192,11 @@ class MetaOAuthController(http.Controller):
                 'active': True,
             }
 
-            existing = env['meta.page'].search([('page_id', '=', meta_page_id)], limit=1)
+            MetaPage = env['meta.page'].sudo()
+            existing = MetaPage.search([('page_id', '=', meta_page_id)], limit=1)
             if existing:
                 existing.write(vals)
             else:
-                env['meta.page'].create(vals)
+                MetaPage.create(vals)
+
+        return len(pages_data)

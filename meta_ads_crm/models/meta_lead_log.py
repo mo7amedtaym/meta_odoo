@@ -44,6 +44,8 @@ class MetaLeadLog(models.Model):
     def _process_lead(self):
         """Fetch lead data from Meta API and create a CRM lead."""
         self.ensure_one()
+        if not self.page_id and self.form_id and self.form_id.page_id:
+            self.page_id = self.form_id.page_id
         if not self.page_id:
             self._mark_error('No linked Facebook Page found.')
             return
@@ -87,7 +89,7 @@ class MetaLeadLog(models.Model):
         if not graph_version.startswith('v'):
             graph_version = 'v%s' % graph_version
         url = 'https://graph.facebook.com/%s/%s' % (graph_version, self.leadgen_id)
-        params = {'access_token': access_token}
+        params = {'access_token': access_token, 'fields': 'id,created_time,field_data,form_id,ad_id,campaign_id,platform'}
         try:
             resp = requests.get(url, params=params, timeout=30)
             resp.raise_for_status()
@@ -112,6 +114,14 @@ class MetaLeadLog(models.Model):
 
     def _create_crm_lead(self, lead_data):
         """Map Meta field_data to CRM lead fields and create the record."""
+        if not self.form_id and lead_data.get('form_id'):
+            form = self.env['meta.lead.form'].search([
+                ('form_id', '=', str(lead_data.get('form_id'))),
+            ], limit=1)
+            if form:
+                self.form_id = form
+                if not self.page_id and form.page_id:
+                    self.page_id = form.page_id
         if not self.form_id:
             self._mark_error(
                 'No linked lead form. Create/sync a meta.lead.form record for form_id "%s".'
@@ -156,6 +166,13 @@ class MetaLeadLog(models.Model):
         try:
             lead = self.env['crm.lead'].create(lead_vals)
             form.last_lead_time = fields.Datetime.now()
+            # Notify only after successful creation. This same code path is used
+            # by real-time webhooks and missing-lead recovery.
+            try:
+                form._notify_new_crm_lead(lead)
+            except Exception:
+                # Notification failures must never block lead creation.
+                _logger.exception('Failed to notify users for Meta lead %s.', self.leadgen_id)
             return lead
         except Exception as e:
             self._mark_error('Failed to create CRM lead: %s' % str(e))

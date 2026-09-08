@@ -4,7 +4,7 @@
               name="Meta Ads"
               parent="crm.crm_menu_config"
               sequence="50"
-              groups="meta_ads_crm.group_meta_ads_user"/>
+              groups="base.group_system,meta_ads_crm.group_meta_ads_user"/>
 
     <menuitem id="menu_meta_ads_pages"
               name="Pages"
@@ -32,5 +32,5 @@
               parent="menu_meta_ads_root"
               action="meta_config_settings_action"
               sequence="50"
-              groups="meta_ads_crm.group_meta_ads_manager"/>
+              groups="base.group_system,meta_ads_crm.group_meta_ads_manager"/>
 </odoo>

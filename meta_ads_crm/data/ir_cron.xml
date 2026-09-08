@@ -10,5 +10,15 @@
             <field name="interval_type">minutes</field>
             <field name="active">True</field>
         </record>
+
+        <record id="ir_cron_recover_meta_leads" model="ir.cron">
+            <field name="name">Meta Ads: Recover Missing Leads</field>
+            <field name="model_id" ref="model_meta_lead_form"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_recover_missing_leads()</field>
+            <field name="interval_number">15</field>
+            <field name="interval_type">minutes</field>
+            <field name="active">True</field>
+        </record>
     </data>
 </odoo>

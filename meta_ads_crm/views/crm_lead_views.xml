@@ -5,6 +5,10 @@
         <field name="model">crm.lead</field>
         <field name="inherit_id" ref="crm.crm_lead_view_form"/>
         <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <!-- Technical fields required by Odoo 17 modifiers -->
+                <field name="meta_raw_data" invisible="1"/>
+            </xpath>
             <xpath expr="//header" position="inside">
                 <button name="action_reapply_meta_mapping"
                         string="Reapply Meta Mapping"

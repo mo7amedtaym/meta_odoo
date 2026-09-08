@@ -5,7 +5,7 @@
         <field name="name">meta.lead.form.list</field>
         <field name="model">meta.lead.form</field>
         <field name="arch" type="xml">
-            <list>
+            <tree>
                 <field name="form_id"/>
                 <field name="name"/>
                 <field name="page_id"/>
@@ -14,7 +14,7 @@
                 <field name="team_id"/>
                 <field name="user_id"/>
                 <field name="lead_count" string="Leads"/>
-            </list>
+            </tree>
         </field>
     </record>
 
@@ -27,6 +27,9 @@
                 <header>
                     <button name="action_sync_from_meta" type="object"
                             string="Sync from Meta" class="btn btn-primary"
+                            invisible="not page_id"/>
+                    <button name="action_recover_missing_leads" type="object"
+                            string="Recover Missing Leads" class="btn btn-secondary"
                             invisible="not page_id"/>
                 </header>
                 <sheet>
@@ -52,20 +55,65 @@
                             <field name="stage_id"
                                    invisible="import_mode != 'opportunity'"
                                    required="import_mode == 'opportunity'"
-                                   domain="['|', ('team_ids', '=', False), ('team_ids', 'in', team_id)]"/>
+                                   domain="['|', ('team_id', '=', False), ('team_id', '=', team_id)]"/>
                             <field name="user_id"/>
                             <field name="tag_ids" widget="many2many_tags"/>
                         </group>
                     </group>
                     <notebook>
-                        <page string="Field Mappings" name="mappings">
+                        <page string="Notifications" name="notifications">
+                            <group>
+                                <group string="New Lead Notifications">
+                                    <field name="notify_on_new_lead"/>
+                                    <field name="notification_user_ids" widget="many2many_tags"
+                                           invisible="not notify_on_new_lead"/>
+                                    <field name="notify_assigned_salesperson"
+                                           invisible="not notify_on_new_lead"/>
+                                    <field name="create_notification_activity"
+                                           invisible="not notify_on_new_lead"/>
+                                </group>
+                                <group string="Behavior">
+                                    <div class="text-muted" invisible="not notify_on_new_lead">
+                                        Notifications are sent only after the CRM lead is created successfully.
+                                        Leads recovered by the automatic recovery process use the same notification settings.
+                                    </div>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Mapping Settings" name="mappings">
+                            <group>
+                                <group string="Behavior">
+                                    <field name="auto_mapping_enabled"/>
+                                    <field name="unmapped_field_policy"/>
+                                </group>
+                                <group string="Tools">
+                                    <button name="action_initialize_default_mappings" type="object"
+                                            string="Initialize Default Mapping" class="btn btn-primary"/>
+                                    <button name="action_sync_mapping_from_questions" type="object"
+                                            string="Load Current Form Questions" class="btn btn-secondary"/>
+                                </group>
+                            </group>
+                            <div class="alert alert-info" role="alert">
+                                Explicit mappings below have priority over automatic mapping.
+                                Use Aliases when Meta changes the payload/question key.
+                            </div>
                             <field name="field_mapping_ids">
-                                <list editable="bottom">
+                                <tree editable="bottom" default_order="sequence,id">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="active"/>
                                     <field name="meta_key"/>
                                     <field name="meta_label"/>
+                                    <field name="meta_aliases"/>
                                     <field name="odoo_field_name"/>
-                                </list>
+                                </tree>
                             </field>
+                        </page>
+                        <page string="Recovery" name="recovery">
+                            <group>
+                                <field name="last_recovery_at" readonly="1"/>
+                                <field name="last_recovery_status" readonly="1"/>
+                                <field name="last_recovery_error" readonly="1" widget="text"/>
+                            </group>
                         </page>
                         <page string="URLs" name="urls">
                             <group>
@@ -103,7 +151,7 @@
     <record id="action_meta_lead_form" model="ir.actions.act_window">
         <field name="name">Lead Forms</field>
         <field name="res_model">meta.lead.form</field>
-        <field name="view_mode">list,form</field>
+        <field name="view_mode">tree,form</field>
         <field name="search_view_id" ref="meta_lead_form_view_search"/>
         <field name="context">{'search_default_active_only': 1}</field>
     </record>

@@ -7,6 +7,7 @@
             <form string="Meta Ads Settings" class="oe_form_configuration" js_class="base_settings">
                 <app data-string="Meta Ads" string="Meta Ads" name="meta_ads_crm"
                      groups="base.group_system">
+                    <field name="meta_connected" invisible="1"/>
                     <block title="Connection">
                         <setting>
                             <div class="row">
@@ -34,8 +35,28 @@
                                     <label for="meta_public_base_url" class="o_light_label"/>
                                     <field name="meta_public_base_url" placeholder="https://testmeta.o.cm.sa"/>
                                     <div class="text-muted">Use the public HTTPS URL only, without a trailing slash.</div>
-                                    <div class="text-muted mt8">Required OAuth scopes: leads_retrieval, pages_show_list, pages_read_engagement, pages_manage_metadata, pages_manage_ads, ads_management.</div>
+                                    <div class="mt8">
+                                        <field name="meta_request_pages_manage_metadata"/>
+                                        <span class="text-muted ms-2">Keep this enabled when your Meta app accepts pages_manage_metadata. If Meta reports it as an Invalid Scope, disable this option and reconnect. You can enable it again later without updating the module.</span>
+                                    </div>
+                                    <div class="mt8">
+                                        <label for="meta_effective_oauth_scopes" class="o_light_label"/>
+                                        <field name="meta_effective_oauth_scopes" readonly="1"/>
+                                    </div>
                                 </div>
+                            </div>
+                        </setting>
+                    </block>
+                    <block title="Connection Health">
+                        <setting string="Runtime Status">
+                            <field name="meta_connection_status" readonly="1"/>
+                            <div class="row mt8">
+                                <div class="col-lg-6"><label for="meta_active_page_count"/><field name="meta_active_page_count" readonly="1"/></div>
+                                <div class="col-lg-6"><label for="meta_token_expiry"/><field name="meta_token_expiry" readonly="1"/></div>
+                            </div>
+                            <div class="row mt8">
+                                <div class="col-lg-6"><label for="meta_webhook_last_received_at"/><field name="meta_webhook_last_received_at" readonly="1"/></div>
+                                <div class="col-lg-6"><label for="meta_webhook_last_lead_at"/><field name="meta_webhook_last_lead_at" readonly="1"/></div>
                             </div>
                         </setting>
                     </block>
@@ -53,6 +74,21 @@
                                 <button name="action_generate_fernet_key" type="object"
                                         class="btn btn-secondary" string="Generate Encryption Key"/>
                             </div>
+                        </setting>
+                        <setting string="OAuth Diagnostics">
+                            <label for="meta_oauth_last_status"/>
+                            <field name="meta_oauth_last_status" readonly="1"/>
+                            <label for="meta_oauth_last_error" invisible="not meta_oauth_last_error"/>
+                            <field name="meta_oauth_last_error" readonly="1" invisible="not meta_oauth_last_error" nolabel="1"/>
+                        </setting>
+                    </block>
+                    <block title="Missing Leads Recovery">
+                        <setting string="Automatic Recovery">
+                            <field name="meta_recovery_enabled"/>
+                            <div class="mt8"><label for="meta_recovery_lookback_days"/><field name="meta_recovery_lookback_days"/></div>
+                            <div class="mt8"><label for="meta_recovery_last_run_at"/><field name="meta_recovery_last_run_at" readonly="1"/></div>
+                            <button name="action_run_meta_recovery_now" type="object" string="Recover Missing Leads Now" class="btn btn-primary mt8"/>
+                            <div class="text-muted mt8">The cron periodically reads recent leads directly from Meta Forms and creates any leads that the webhook missed.</div>
                         </setting>
                     </block>
                     <block title="Webhook &amp; OAuth URLs">

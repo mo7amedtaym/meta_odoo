@@ -3,7 +3,7 @@ import hmac
 import json
 import logging
 
-from odoo import http
+from odoo import http, fields
 from odoo.http import request
 
 _logger = logging.getLogger(__name__)
@@ -48,7 +48,13 @@ class MetaWebhookController(http.Controller):
         if data.get('object') != 'page':
             return request.make_json_response({'status': 'success'})
 
-        env = request.env(su=True)
+        env = request.env
+        icp = env['ir.config_parameter'].sudo()
+        now_str = fields.Datetime.to_string(fields.Datetime.now())
+        icp.set_param('meta.webhook.last_received_at', now_str)
+        LeadLog = env['meta.lead.log'].sudo()
+        LeadForm = env['meta.lead.form'].sudo()
+        MetaPage = env['meta.page'].sudo()
         for entry in data.get('entry', []):
             for change in entry.get('changes', []):
                 if change.get('field') != 'leadgen':
@@ -65,7 +71,9 @@ class MetaWebhookController(http.Controller):
                 if not leadgen_id:
                     continue
 
-                existing_log = env['meta.lead.log'].search([
+                icp.set_param('meta.webhook.last_lead_at', now_str)
+
+                existing_log = LeadLog.search([
                     ('leadgen_id', '=', str(leadgen_id))
                 ], limit=1)
                 if existing_log:
@@ -74,15 +82,17 @@ class MetaWebhookController(http.Controller):
 
                 form_record = False
                 if form_id_raw:
-                    form_record = env['meta.lead.form'].search(
+                    form_record = LeadForm.search(
                         [('form_id', '=', str(form_id_raw))], limit=1
                     )
 
                 page_record = False
                 if page_id_raw:
-                    page_record = env['meta.page'].search(
+                    page_record = MetaPage.search(
                         [('page_id', '=', str(page_id_raw))], limit=1
                     )
+                if not page_record and form_record and form_record.page_id:
+                    page_record = form_record.page_id
 
                 log_vals = {
                     'leadgen_id': str(leadgen_id),
@@ -94,7 +104,7 @@ class MetaWebhookController(http.Controller):
                     'payload_json': val,
                     'status': 'Pending',
                 }
-                log = env['meta.lead.log'].create(log_vals)
+                log = LeadLog.create(log_vals)
 
                 try:
                     log._process_lead()
