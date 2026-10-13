@@ -53,4 +53,15 @@
             </xpath>
         </field>
     </record>
+    <record id="crm_stage_tree_meta_default" model="ir.ui.view">
+        <field name="name">crm.stage.tree.meta.default</field>
+        <field name="model">crm.stage</field>
+        <field name="inherit_id" ref="crm.crm_stage_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='is_won']" position="after">
+                <field name="is_meta_default_stage" string="Meta Default"/>
+            </xpath>
+        </field>
+    </record>
+
 </odoo>

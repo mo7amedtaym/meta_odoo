@@ -263,6 +263,70 @@ class MetaPage(models.Model):
             }
         }
 
+    def _sync_lead_form_by_meta_id(self, meta_form_id, access_token=None):
+        """Fetch one Meta lead form by ID and create/update its local record.
+
+        This is used as a real-time fallback when a webhook arrives for a newly
+        created Meta form before the user has run the manual Forms Sync action.
+        """
+        self.ensure_one()
+        meta_form_id = str(meta_form_id or '').strip()
+        if not meta_form_id:
+            raise UserError('Meta form ID is required for automatic form sync.')
+
+        access_token = access_token or self.decrypt_token()
+        if not access_token:
+            raise UserError('No valid access token for this page. Re-authorize via Settings.')
+
+        url = 'https://graph.facebook.com/%s/%s' % (self._graph_version(), meta_form_id)
+        params = {
+            'access_token': access_token,
+            'fields': 'id,name,status,locale,questions',
+        }
+        try:
+            resp = requests.get(url, params=params, timeout=30)
+            resp.raise_for_status()
+            form_data = resp.json()
+        except requests.RequestException as e:
+            response = getattr(e, 'response', None)
+            detail = self._meta_error_detail(response) or str(e)
+            self.last_api_error = detail
+            raise UserError('Could not auto-sync Meta lead form %s.\n%s' % (meta_form_id, detail))
+
+        returned_form_id = str(form_data.get('id') or '')
+        if not returned_form_id:
+            raise UserError('Meta returned no form data for form ID %s.' % meta_form_id)
+        if returned_form_id != meta_form_id:
+            raise UserError(
+                'Meta returned form ID %s while %s was requested.'
+                % (returned_form_id, meta_form_id)
+            )
+
+        questions = form_data.get('questions') or []
+        vals = {
+            'form_id': returned_form_id,
+            'name': form_data.get('name') or 'Form %s' % returned_form_id,
+            'status': form_data.get('status') or 'ACTIVE',
+            'locale': form_data.get('locale') or '',
+            'page_id': self.id,
+            'questions_json': form_data,
+        }
+
+        LeadForm = self.env['meta.lead.form']
+        form = LeadForm.search([('form_id', '=', returned_form_id)], limit=1)
+        if form:
+            form.write(vals)
+        else:
+            form = LeadForm.create(vals)
+        form._sync_field_mappings(questions)
+
+        self.last_api_error = False
+        _logger.info(
+            'Auto-synced Meta lead form %s (%s) for page %s.',
+            returned_form_id, form.name, self.page_id,
+        )
+        return form
+
     def action_sync_forms(self):
         """Fetch lead forms from Meta Graph API and create/update local records."""
         self.ensure_one()

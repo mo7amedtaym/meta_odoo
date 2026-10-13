@@ -70,7 +70,7 @@ class MetaLeadLog(models.Model):
             return  # error already recorded
 
         # Create CRM lead
-        crm_lead = self._create_crm_lead(lead_data)
+        crm_lead = self._create_crm_lead(lead_data, access_token=access_token)
         if crm_lead:
             self.write({
                 'status': 'Created',
@@ -112,12 +112,30 @@ class MetaLeadLog(models.Model):
             self._mark_error(detail)
             return None
 
-    def _create_crm_lead(self, lead_data):
+    def _create_crm_lead(self, lead_data, access_token=None):
         """Map Meta field_data to CRM lead fields and create the record."""
-        if not self.form_id and lead_data.get('form_id'):
+        meta_form_id = str(lead_data.get('form_id') or '').strip()
+        if not self.form_id and meta_form_id:
             form = self.env['meta.lead.form'].search([
-                ('form_id', '=', str(lead_data.get('form_id'))),
+                ('form_id', '=', meta_form_id),
             ], limit=1)
+            if not form and self.page_id:
+                try:
+                    form = self.page_id._sync_lead_form_by_meta_id(
+                        meta_form_id, access_token=access_token
+                    )
+                except UserError as exc:
+                    self._mark_error(str(exc))
+                    return None
+                except Exception as exc:
+                    _logger.exception(
+                        'Unexpected automatic Meta form sync failure for form %s.',
+                        meta_form_id,
+                    )
+                    self._mark_error(
+                        'Could not auto-sync Meta lead form %s: %s' % (meta_form_id, exc)
+                    )
+                    return None
             if form:
                 self.form_id = form
                 if not self.page_id and form.page_id:
@@ -136,8 +154,10 @@ class MetaLeadLog(models.Model):
         lead_vals['type'] = 'lead' if form.import_mode == 'lead' else 'opportunity'
         if form.team_id:
             lead_vals.setdefault('team_id', form.team_id.id)
-        if form.import_mode == 'opportunity' and form.stage_id:
-            lead_vals['stage_id'] = form.stage_id.id
+        if form.import_mode == 'opportunity':
+            meta_stage = self.env['crm.stage']._get_meta_default_stage()
+            if meta_stage:
+                lead_vals['stage_id'] = meta_stage.id
         if form.user_id:
             lead_vals.setdefault('user_id', form.user_id.id)
         if form.tag_ids:

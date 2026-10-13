@@ -10,4 +10,5 @@ from . import meta_ad
 from . import meta_promotion
 from . import meta_lead_log
 from . import crm_lead
+from . import crm_stage
 from . import res_config_settings

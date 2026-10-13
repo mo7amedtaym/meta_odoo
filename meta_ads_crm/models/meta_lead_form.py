@@ -166,12 +166,7 @@ class MetaLeadForm(models.Model):
     import_mode = fields.Selection([
         ('lead', 'Lead'),
         ('opportunity', 'Opportunity')
-    ], string='Import Mode', default='lead')
-    stage_id = fields.Many2one(
-        'crm.stage',
-        string='Opportunity Stage',
-        help='Stage assigned to CRM opportunities created from this Meta lead form.',
-    )
+    ], string='Import Mode', default='opportunity')
     team_id = fields.Many2one('crm.team', string='Sales Team')
     user_id = fields.Many2one('res.users', string='Salesperson')
     tag_ids = fields.Many2many('crm.tag', string='Tags')
@@ -220,22 +215,6 @@ class MetaLeadForm(models.Model):
     last_recovery_at = fields.Datetime(string='Last Recovery At', readonly=True, copy=False)
     last_recovery_status = fields.Char(string='Last Recovery Status', readonly=True, copy=False)
     last_recovery_error = fields.Text(string='Last Recovery Error', readonly=True, copy=False)
-
-    @api.onchange('import_mode')
-    def _onchange_import_mode(self):
-        """A stage only applies when this form creates opportunities."""
-        if self.import_mode != 'opportunity':
-            self.stage_id = False
-
-    @api.onchange('team_id')
-    def _onchange_team_id(self):
-        """Clear a team-specific stage when it no longer matches the selected team."""
-        if (
-            self.stage_id
-            and self.stage_id.team_id
-            and (not self.team_id or self.stage_id.team_id != self.team_id)
-        ):
-            self.stage_id = False
 
     def action_initialize_default_mappings(self):
         """Add a safe default mapping profile without overwriting user mappings."""
