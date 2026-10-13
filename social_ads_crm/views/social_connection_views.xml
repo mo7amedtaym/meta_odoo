@@ -1,0 +1,16 @@
+<odoo>
+  <record id="view_social_connection_tree" model="ir.ui.view"><field name="name">social.ads.connection.tree</field><field name="model">social.ads.connection</field><field name="arch" type="xml">
+    <tree><field name="name"/><field name="provider"/><field name="company_id"/><field name="connection_status"/><field name="token_expires_at"/><field name="last_health_check_at"/></tree>
+  </field></record>
+  <record id="view_social_connection_form" model="ir.ui.view"><field name="name">social.ads.connection.form</field><field name="model">social.ads.connection</field><field name="arch" type="xml">
+    <form string="Social Ads Connection"><header>
+      <button name="action_connect" string="Connect / Reconnect" type="object" class="oe_highlight" invisible="provider != 'snapchat'"/>
+      <button name="action_check_health" string="Check Health" type="object" invisible="provider != 'snapchat'"/>
+      <button name="action_sync_accounts" string="Sync Ad Accounts" type="object" invisible="provider != 'snapchat' or connection_status != 'connected'"/>
+    </header><sheet><group><group><field name="name"/><field name="provider"/><field name="company_id"/><field name="active"/></group><group><field name="connection_status" readonly="1"/><field name="token_expires_at" readonly="1"/><field name="last_health_check_at" readonly="1"/><field name="last_success_at" readonly="1"/></group></group>
+    <group string="Last Error" invisible="not last_error_message"><field name="last_error_code" readonly="1"/><field name="last_error_message" readonly="1" nolabel="1"/></group>
+    <notebook><page string="Ad Accounts"><field name="ad_account_ids" readonly="1"><tree><field name="name"/><field name="external_id"/><field name="status"/><field name="currency"/></tree></field></page></notebook>
+    </sheet><chatter/></form>
+  </field></record>
+  <record id="action_social_connection" model="ir.actions.act_window"><field name="name">Connections</field><field name="res_model">social.ads.connection</field><field name="view_mode">tree,form</field></record>
+</odoo>

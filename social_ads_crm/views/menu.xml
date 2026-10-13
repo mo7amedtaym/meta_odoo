@@ -1,0 +1,9 @@
+<odoo>
+  <menuitem id="menu_social_ads_root" name="Social Ads CRM" sequence="45" groups="social_ads_crm.group_social_ads_user"/>
+  <menuitem id="menu_social_ads_connections" name="Connections" parent="menu_social_ads_root" action="action_social_connection" sequence="10" groups="social_ads_crm.group_social_ads_manager"/>
+  <menuitem id="menu_social_ads_accounts" name="Ad Accounts" parent="menu_social_ads_root" action="action_social_ad_account" sequence="20"/>
+  <menuitem id="menu_social_ads_forms" name="Lead Forms" parent="menu_social_ads_root" action="action_social_lead_form" sequence="30"/>
+  <menuitem id="menu_social_ads_logs" name="Lead Logs" parent="menu_social_ads_root" action="action_social_lead_log" sequence="40" groups="social_ads_crm.group_social_ads_manager"/>
+  <menuitem id="menu_social_ads_meta_compat" name="Meta Operations" parent="menu_social_ads_root" action="meta_ads_crm.action_meta_page" sequence="50" groups="social_ads_crm.group_social_ads_manager"/>
+  <menuitem id="menu_social_ads_settings" name="Settings" parent="menu_social_ads_root" action="base.action_res_config_settings" sequence="90" groups="social_ads_crm.group_social_ads_manager"/>
+</odoo>

@@ -1,0 +1,12 @@
+<odoo>
+  <record id="group_social_ads_user" model="res.groups">
+    <field name="name">Social Ads User</field>
+    <field name="category_id" ref="base.module_category_sales_crm"/>
+    <field name="implied_ids" eval="[(4, ref('meta_ads_crm.group_meta_ads_user'))]"/>
+  </record>
+  <record id="group_social_ads_manager" model="res.groups">
+    <field name="name">Social Ads Manager</field>
+    <field name="category_id" ref="base.module_category_sales_crm"/>
+    <field name="implied_ids" eval="[(4, ref('social_ads_crm.group_social_ads_user')), (4, ref('meta_ads_crm.group_meta_ads_manager'))]"/>
+  </record>
+</odoo>

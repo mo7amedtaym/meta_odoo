@@ -1,0 +1,5 @@
+<odoo>
+  <record id="res_config_settings_view_form_social_ads" model="ir.ui.view"><field name="name">res.config.settings.social.ads</field><field name="model">res.config.settings</field><field name="inherit_id" ref="base.res_config_settings_view_form"/><field name="arch" type="xml">
+    <xpath expr="//form" position="inside"><app string="Social Ads CRM" name="social_ads_crm" groups="social_ads_crm.group_social_ads_manager"><block title="Snapchat API"><setting string="Snapchat Client ID"><field name="snapchat_client_id"/></setting><setting string="Snapchat Client Secret"><field name="snapchat_client_secret" password="True"/></setting><setting string="Webhook Signature Tolerance (seconds)"><field name="snapchat_signature_tolerance"/></setting></block></app></xpath>
+  </field></record>
+</odoo>

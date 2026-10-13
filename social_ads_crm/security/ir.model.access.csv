@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_social_connection_manager,social.ads.connection manager,model_social_ads_connection,social_ads_crm.group_social_ads_manager,1,1,1,1
+access_social_account_user,social.ads.account user,model_social_ads_account,social_ads_crm.group_social_ads_user,1,0,0,0
+access_social_account_manager,social.ads.account manager,model_social_ads_account,social_ads_crm.group_social_ads_manager,1,1,1,1
+access_social_form_user,social.lead.form user,model_social_lead_form,social_ads_crm.group_social_ads_user,1,0,0,0
+access_social_form_manager,social.lead.form manager,model_social_lead_form,social_ads_crm.group_social_ads_manager,1,1,1,1
+access_social_map_manager,social.lead.form.field.map manager,model_social_lead_form_field_map,social_ads_crm.group_social_ads_manager,1,1,1,1
+access_social_log_manager,social.lead.log manager,model_social_lead_log,social_ads_crm.group_social_ads_manager,1,1,1,0

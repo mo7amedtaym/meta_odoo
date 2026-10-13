@@ -1,0 +1,5 @@
+<odoo>
+  <record id="crm_lead_view_form_social_ads" model="ir.ui.view"><field name="name">crm.lead.form.social.ads</field><field name="model">crm.lead</field><field name="inherit_id" ref="crm.crm_lead_view_form"/><field name="arch" type="xml">
+    <xpath expr="//notebook" position="inside"><page string="Social Ads" invisible="not social_provider"><group><field name="social_provider"/><field name="social_external_lead_id"/><field name="social_form_id"/><field name="social_lead_log_id"/></group><field name="social_raw_data"/></page></xpath>
+  </field></record>
+</odoo>

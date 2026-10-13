@@ -1,0 +1,12 @@
+<odoo noupdate="1">
+  <record id="ir_cron_social_connection_health" model="ir.cron">
+    <field name="name">Social Ads: Connection Health</field><field name="model_id" ref="model_social_ads_connection"/>
+    <field name="state">code</field><field name="code">model._cron_check_connection_health()</field>
+    <field name="interval_number">1</field><field name="interval_type">hours</field><field name="active">True</field>
+  </record>
+  <record id="ir_cron_social_lead_retry" model="ir.cron">
+    <field name="name">Social Ads: Retry Failed Leads</field><field name="model_id" ref="model_social_lead_log"/>
+    <field name="state">code</field><field name="code">model._cron_retry_errors()</field>
+    <field name="interval_number">10</field><field name="interval_type">minutes</field><field name="active">True</field>
+  </record>
+</odoo>
